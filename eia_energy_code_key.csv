@@ -1,0 +1,41 @@
+Grouping,Energy Source Code,Energy Source Description
+Coal,ANT,Anthracite Coal
+Coal,BIT,Bituminous Coal
+Coal,LIG,Lignite Coal
+Coal,SUB,Subbituminous Coal
+Coal,SGC,Coal-Derived Synthesis Gas
+Coal,WC,Waste Coal
+Petroleum Products,DFO,Distillate Fuel Oil
+Petroleum Products,JF,Jet Fuel
+Petroleum Products,KER,Kerosene
+Petroleum Products,PC,Petroleum Coke
+Petroleum Products,PG,Gaseous Propane
+Petroleum Products,RFO,Residual Fuel Oil
+Petroleum Products,SG,Synthesis Gas from Petroleum Coke
+Petroleum Products,OW,Waste/Other Oil
+Petroleum Products,WO,Waste/Other Oil
+Natural Gas and Other Gases,BFG,Blast Furnace Gas
+Natural Gas and Other Gases,NG,Natural Gas
+Natural Gas and Other Gases,OOG,Other Gases
+Natural Gas and Other Gases,OG,Other Gases
+Nuclear,NUC,Nuclear
+Hydroelectric Conventional,WAT,Hydroelectric
+Hydroelectric Pumped Storage,WAT,Hydroelectric
+Wood and Wood-Derived Fuels,WDS,Wood Waste Solids
+Wood and Wood-Derived Fuels,WDL,Wood Waste Liquids
+Wood and Wood-Derived Fuels,BLQ,Black Liquor
+Other Biomass,AB,Agricultural By-Products
+Other Biomass,MSW,Municipal Solid Waste
+Other Biomass,OBG,Other Biomass Gas
+Other Biomass,OBL,Other Biomass Liquids
+Other Biomass,OBS,Other Biomass Solids
+Other Biomass,LFG,Municiapl Landfill Gas
+Other Biomass,SLW,Sludge Waste
+Other Renewable Energy Sources,SUN,Solar
+Other Renewable Energy Sources,WND,Wind
+Other Renewable Energy Sources,GEO,Geothermal
+Other Energy Sources,PUR,Purchased Steam
+Other Energy Sources,WH,Waste heat not directly attributed to a fuel source
+Other Energy Sources,TDF,Tire-Derived Fuels
+Other Energy Sources,MWH,Electricity used for energy storage
+Other Energy Sources,OTH,Other
