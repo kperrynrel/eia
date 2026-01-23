@@ -26,12 +26,16 @@ energy_code_df = pd.read_csv("eia_energy_code_key.csv")
 energy_code_dict = dict(zip(energy_code_df['Energy Source Code'],
                             energy_code_df['Energy Source Description']))
 
+prime_mover_df = pd.read_csv("Prime_Mover_Codes.csv")
+prime_mover_dict = dict(zip(prime_mover_df['Prime Mover Code'],
+                            prime_mover_df['Prime Mover Description']))
+
 def process_master_plant_data(df,
                               joiner_columns,
                               metadata_columns,
                               removal_columns,
                               data_type):
-    plants = list(df["PLANT NAME"].drop_duplicates())
+    plant_ids = list(df["PLANT ID"].drop_duplicates())
     meta_df = df[metadata_columns].drop_duplicates()
     meta_df.to_csv("./923_metadata/" + data_type + "_923_metadata.csv", 
                    index=False)
@@ -42,8 +46,8 @@ def process_master_plant_data(df,
     # Now remove all of the metadata columns with the exception of the joiner columns
     time_series_df = df[time_series_columns]
     # Generate data for each plant
-    for plant in plants:
-        plant_df = time_series_df[time_series_df['PLANT NAME'] == plant]
+    for plant in plant_ids:
+        plant_df = time_series_df[time_series_df['PLANT ID'] == plant]
         if len(plant_df) > 0:
             plant_id = str(plant_df['PLANT ID'].iloc[0])
             plant_df = pd.melt(plant_df,
@@ -65,6 +69,10 @@ def process_master_plant_data(df,
                                            x in energy_code_dict.keys() else None
                                            for x in 
                                            list(plant_df['REPORTED FUEL TYPE CODE'])]
+                plant_df['prime_mover_type'] = [prime_mover_dict[x] if
+                                           x in prime_mover_dict.keys() else None
+                                           for x in 
+                                           list(plant_df['REPORTED PRIME MOVER'])]
                 # Get the associated sensor_name
                 plant_df.loc[plant_df['variable'].str.contains("NETGEN"),
                              "common_name"] = 'generation'
@@ -77,19 +85,23 @@ def process_master_plant_data(df,
                 # Build out common name
                 plant_df.loc[(plant_df['variable'].str.contains("NETGEN")) &
                              (~plant_df['energy_type'].isna()),
-                             "sensor_name"] = (plant_df['energy_type'] +
+                             "sensor_name"] = (plant_df['energy_type'] + "-" 
+                                               +  plant_df['prime_mover_type'] +
                                                " Generation")
                 plant_df.loc[(plant_df['variable'].str.contains("GROSSGEN")) &
                              (~plant_df['energy_type'].isna()),
-                             "sensor_name"] = (plant_df['energy_type'] +
+                             "sensor_name"] = (plant_df['energy_type'] + "-" 
+                                               +  plant_df['prime_mover_type'] +
                                                " Gross Generation")
                 plant_df.loc[(plant_df['variable'].str.contains("ELEC MMBTU")) &
                              (~plant_df['energy_type'].isna()),
-                             "sensor_name"] = (plant_df['energy_type'] +
+                             "sensor_name"] = (plant_df['energy_type'] 
+                                               + "-" +  plant_df['prime_mover_type'] +
                                                " Quantity Consumed For Electricity")
                 plant_df.loc[(plant_df['variable'].str.contains("TOT MMBTU")) &
                              (~plant_df['energy_type'].isna()),
                              "sensor_name"] = (plant_df['energy_type'] +
+                                               "-" +  plant_df['prime_mover_type'] +
                                                " Total Fuel Consumed")
                 plant_df = plant_df[~plant_df['sensor_name'].isna()]
                 plant_df = plant_df[['measured_on', 'sensor_name', 'value']].drop_duplicates()
@@ -104,16 +116,16 @@ def get_soup(URL):
 
 if __name__ == "__main__":
     logger = logging.getLogger(__name__)
-    for link in get_soup(URL).findAll("a", attrs={'href': re.compile(".zip")}):
-        file_link = link.get('href')
-        print(file_link)
-        try:
-            with open(link.text, 'wb') as file:
-                response = requests.get(URL + file_link, verify=False)
-                z = zipfile.ZipFile(io.BytesIO(response.content))
-                z.extractall("./923_extracts/" + file_link.replace(".zip", ""))
-        except:
-            print("Could not process the following file: " + file_link)
+    # for link in get_soup(URL).findAll("a", attrs={'href': re.compile(".zip")}):
+    #     file_link = link.get('href')
+    #     print(file_link)
+    #     try:
+    #         with open(link.text, 'wb') as file:
+    #             response = requests.get(URL + file_link, verify=False)
+    #             z = zipfile.ZipFile(io.BytesIO(response.content))
+    #             z.extractall("./923_extracts/" + file_link.replace(".zip", ""))
+    #     except:
+    #         print("Could not process the following file: " + file_link)
             
     # Glob glob the dataset
     
