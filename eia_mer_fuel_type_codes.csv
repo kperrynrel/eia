@@ -1,0 +1,19 @@
+fuel_code,description,category
+DFO,Distillate Fuel Oil,fossil
+WND,Wind,renewable
+HYC,Hydroelectric Conventional,renewable
+NG,Natural Gas,fossil
+COL,Coal,fossil
+NUC,Nuclear,nuclear
+ORW,Other Renewables,renewable
+WWW,Wood and Wood-derived Fuels,renewable
+HPS,Hydro-electric Pumped Storage,renewable
+RFO,Residual Fuel Oil,fossil
+PC,Petroleum Coke,fossil
+OTH,Other,other
+SUN,Solar,renewable
+GEO,Geothermal,renewable
+OOG,Other Gases,fossil
+WOO,Waste Oil,waste
+MLG,Municipal Landfill Gas,waste
+WOC,Waste/Other Combustible,waste

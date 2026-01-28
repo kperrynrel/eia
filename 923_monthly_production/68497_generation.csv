@@ -1,0 +1,4 @@
+PLANT ID,PLANT NAME,REPORTED PRIME MOVER,REPORTED FUEL TYPE CODE,MER FUEL TYPE CODE,NUCLEAR UNIT ID,COMBINED HEAT AND POWER PLANT,YEAR,file,variable,value,MONTH,period,energy_type,prime_mover_type,mer_type,common_name,sensor_name
+68497,Rock Creek Wind I,WT,WND,WND,,N,2025,EIA923_Schedules_2_3_4_5_M_10_2025_17DEC2025.xlsx,NETGEN OCT,46963,OCT,2025-10-01,Wind,"Wind Turbine, Onshore",Wind,generation,"Wind - Wind Turbine, Onshore - Wind - Generation"
+68497,Rock Creek Wind I,WT,WND,WND,,N,2025,EIA923_Schedules_2_3_4_5_M_10_2025_17DEC2025.xlsx,TOT MMBTU OCT,160238,OCT,2025-10-01,Wind,"Wind Turbine, Onshore",Wind,total-fuel-consumed,"Wind - Wind Turbine, Onshore - Wind - Total Fuel Consumed"
+68497,Rock Creek Wind I,WT,WND,WND,,N,2025,EIA923_Schedules_2_3_4_5_M_10_2025_17DEC2025.xlsx,ELEC MMBTU OCT,160238,OCT,2025-10-01,Wind,"Wind Turbine, Onshore",Wind,quantity-consumed-electricity,"Wind - Wind Turbine, Onshore - Wind - Quantity Consumed For Electricity"

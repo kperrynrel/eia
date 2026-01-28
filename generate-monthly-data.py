@@ -30,12 +30,36 @@ prime_mover_df = pd.read_csv("Prime_Mover_Codes.csv")
 prime_mover_dict = dict(zip(prime_mover_df['Prime Mover Code'],
                             prime_mover_df['Prime Mover Description']))
 
+mer_code_df = pd.read_csv("eia_mer_fuel_type_codes.csv")
+mer_code_dict = dict(zip(mer_code_df['fuel_code'],
+                         mer_code_df['description']))
+
+
+def filter_latest_year_data(df):
+    # Delete all data from the latest year that is not from the most recent
+    # data load (as this data can change before being finally recorded)
+    df_copy = df.copy()
+    df_copy['YEAR'] = pd.to_numeric(df_copy['YEAR'], errors='coerce')
+    max_year_files = list(df_copy[df_copy['YEAR']== df_copy['YEAR'].max()
+                             ]['file'].drop_duplicates())
+    file_match_dict = dict()
+    year = str(int(df_copy['YEAR'].max()))
+    for file in max_year_files:
+        match = re.search(f'M_(\d+)_{year}', file)
+        file_match_dict[file] = int(match.group(1))
+    # get the latest file in the sequence, and build list of file data
+    # we want to remove
+    max_value = max(file_match_dict.values())
+    removal_files = [key for key, value in file_match_dict.items()
+                     if value != max_value]
+    return removal_files
+
 def process_master_plant_data(df,
                               joiner_columns,
                               metadata_columns,
                               removal_columns,
                               data_type):
-    plant_ids = list(df["PLANT ID"].drop_duplicates())
+    plants = list(df["PLANT ID"].drop_duplicates())
     meta_df = df[metadata_columns].drop_duplicates()
     meta_df.to_csv("./923_metadata/" + data_type + "_923_metadata.csv", 
                    index=False)
@@ -46,10 +70,9 @@ def process_master_plant_data(df,
     # Now remove all of the metadata columns with the exception of the joiner columns
     time_series_df = df[time_series_columns]
     # Generate data for each plant
-    for plant in plant_ids:
-        plant_df = time_series_df[time_series_df['PLANT ID'] == plant]
+    for plant_id in plants:
+        plant_df = time_series_df[time_series_df['PLANT ID'] == plant_id]
         if len(plant_df) > 0:
-            plant_id = str(plant_df['PLANT ID'].iloc[0])
             plant_df = pd.melt(plant_df,
                                id_vars=joiner_columns,
                                value_vars= list(Counter(plant_df.columns) -
@@ -58,12 +81,18 @@ def process_master_plant_data(df,
                                  list(plant_df['variable'])]
             plant_df = plant_df[plant_df['YEAR']!='.']
             plant_df = plant_df[plant_df['MONTH']!='.']
-            plant_df['measured_on'] = pd.to_datetime(
-                plant_df["MONTH"] + " 1, " + plant_df["YEAR"].astype(str))
-            plant_df = plant_df.sort_values(by='measured_on')
+            plant_df['period'] = pd.to_datetime(
+                plant_df["MONTH"] + " 1, " + plant_df["YEAR"].astype(str),
+                errors='coerce')
+            plant_df = plant_df.sort_values(by='period')
             # Remove NaN values or "." values
+            plant_df = plant_df[~plant_df['REPORTED FUEL TYPE CODE'].isin(["   "])]
             plant_df = plant_df[plant_df['value']!='.']
             plant_df = plant_df[~plant_df['value'].isna()]
+            # Clean up Nuclear ID column, as that can delineate individual metrics
+            plant_df.loc[(plant_df['NUCLEAR UNIT ID'] == '.') |
+                         (plant_df['NUCLEAR UNIT ID'].isna()), 'NUCLEAR UNIT ID'] = ""
+            plant_df['NUCLEAR UNIT ID'] = plant_df['NUCLEAR UNIT ID'].astype(str)
             if len(plant_df) > 0:
                 plant_df['energy_type'] = [energy_code_dict[x] if
                                            x in energy_code_dict.keys() else None
@@ -73,6 +102,10 @@ def process_master_plant_data(df,
                                            x in prime_mover_dict.keys() else None
                                            for x in 
                                            list(plant_df['REPORTED PRIME MOVER'])]
+                plant_df['mer_type'] = [mer_code_dict[x] if
+                                           x in mer_code_dict.keys() else None
+                                           for x in 
+                                           list(plant_df['MER FUEL TYPE CODE'])]
                 # Get the associated sensor_name
                 plant_df.loc[plant_df['variable'].str.contains("NETGEN"),
                              "common_name"] = 'generation'
@@ -85,30 +118,38 @@ def process_master_plant_data(df,
                 # Build out common name
                 plant_df.loc[(plant_df['variable'].str.contains("NETGEN")) &
                              (~plant_df['energy_type'].isna()),
-                             "sensor_name"] = (plant_df['energy_type'] + "-" 
-                                               +  plant_df['prime_mover_type'] +
-                                               " Generation")
+                             "sensor_name"] = (plant_df['energy_type'] +" - "
+                                               + plant_df['prime_mover_type'] +
+                                               " - " + plant_df['mer_type'] +
+                                               " - Generation")
                 plant_df.loc[(plant_df['variable'].str.contains("GROSSGEN")) &
                              (~plant_df['energy_type'].isna()),
-                             "sensor_name"] = (plant_df['energy_type'] + "-" 
-                                               +  plant_df['prime_mover_type'] +
-                                               " Gross Generation")
+                             "sensor_name"] = (plant_df['energy_type'] + " - "
+                                               + plant_df['prime_mover_type'] +
+                                               " - " + plant_df['mer_type'] +
+                                               " - Gross Generation")
                 plant_df.loc[(plant_df['variable'].str.contains("ELEC MMBTU")) &
                              (~plant_df['energy_type'].isna()),
-                             "sensor_name"] = (plant_df['energy_type'] 
-                                               + "-" +  plant_df['prime_mover_type'] +
-                                               " Quantity Consumed For Electricity")
+                             "sensor_name"] = (plant_df['energy_type'] +" - "
+                                               + plant_df['prime_mover_type'] +
+                                               " - " + plant_df['mer_type'] +
+                                               " - Quantity Consumed For Electricity")
                 plant_df.loc[(plant_df['variable'].str.contains("TOT MMBTU")) &
                              (~plant_df['energy_type'].isna()),
-                             "sensor_name"] = (plant_df['energy_type'] +
-                                               "-" +  plant_df['prime_mover_type'] +
-                                               " Total Fuel Consumed")
-                plant_df = plant_df[~plant_df['sensor_name'].isna()]
-                plant_df = plant_df[['measured_on', 'sensor_name', 'value']].drop_duplicates()
-                # Pivot it
-                plant_df = pd.pivot_table(plant_df, values='value', index=['measured_on'], columns=['sensor_name'])
+                             "sensor_name"] = (plant_df['energy_type'] +" - "
+                                               + plant_df['prime_mover_type'] +
+                                               " - " + plant_df['mer_type'] +
+                                               " - Total Fuel Consumed")
+                # ADD NUCLEAR UNIT ID IF NECESSARY
+                plant_df.loc[plant_df['NUCLEAR UNIT ID'] != "",
+                             "sensor_name"] = (plant_df['sensor_name'] + " Unit " + 
+                                               plant_df['NUCLEAR UNIT ID'])
+                plant_df = plant_df[~plant_df['sensor_name'].isna()
+                                    ].drop_duplicates()
                 # Write to a csv file
-                plant_df.to_csv("./923_monthly_production/" + plant_id + ".csv")
+                plant_df.to_csv("./923_monthly_production/" + str(plant_id) + 
+                                "_" + data_type +".csv",
+                                index=False)
     return
 
 def get_soup(URL):
@@ -166,7 +207,8 @@ if __name__ == "__main__":
                        "MMBTUS": "MMBTU",
                        "NUCLEAR UNIT I.D.": "NUCLEAR UNIT ID",
                        "PLANT STATE": "STATE",
-                       "RESERVED ": "RESERVED"
+                       "RESERVED ": "RESERVED",
+                       'AER FUEL TYPE CODE': 'MER FUEL TYPE CODE'
                        }
     
     for file in files:
@@ -194,8 +236,12 @@ if __name__ == "__main__":
             generation_df= generation_df[generation_df.index > index_cutoff]
             generation_df = generation_df.loc[
                 :,~generation_df.columns.duplicated()].copy()
+            generation_df['file'] = os.path.basename(file)
             master_generation_df = pd.concat([master_generation_df, generation_df],
                                              axis=0)
+    files_remove = filter_latest_year_data(master_generation_df)
+    master_generation_df = master_generation_df[~master_generation_df[
+        'file'].isin(files_remove)]    
     # Now that we've got all of our data in standardized format, let's
     # split by system, and build individual time series for each plant
     # Master generation data
@@ -209,17 +255,18 @@ if __name__ == "__main__":
                                    'MER FUEL TYPE CODE',
                                    'BALANCING AUTHORITY CODE',
                                    'RESPONDENT FREQUENCY',
-                                   'PHYSICAL UNIT LABEL', 'AER FUEL TYPE CODE']
+                                   'PHYSICAL UNIT LABEL']
     removal_columns = ['EARLY RELEASE DATA (JUN 2025).\xa0 NOT FULLY EDITED, USE WITH CAUTION.\xa0 DO NOT AGGREGATE TO STATE, REGIONAL, OR NATIONAL TOTALS.',
                        'TOTAL FUEL CONSUMPTION QUANTITY',
                        'ELEC FUEL CONSUMPTION QUANTITY',
                        'TOTAL FUEL CONSUMPTION MMBTU',
                        'ELEC FUEL CONSUMPTION MMBTU',
-                       'NET GENERATION (MEGAWATTHOURS)'        
+                       'NET GENERATION (MEGAWATTHOURS)'    
                         ]
     joiner_columns = ["PLANT ID", "PLANT NAME", 'REPORTED PRIME MOVER',
                       'REPORTED FUEL TYPE CODE', 'MER FUEL TYPE CODE', 
-                      'COMBINED HEAT AND POWER PLANT', "YEAR"]
+                      'NUCLEAR UNIT ID',
+                      'COMBINED HEAT AND POWER PLANT', "YEAR", 'file']
     process_master_plant_data(df = master_generation_df,
                               joiner_columns = joiner_columns,
                               metadata_columns = generation_metadata_columns,
