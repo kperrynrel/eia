@@ -1,4 +1,0 @@
-PLANT ID,PLANT NAME,REPORTED PRIME MOVER,REPORTED FUEL TYPE CODE,MER FUEL TYPE CODE,NUCLEAR UNIT ID,COMBINED HEAT AND POWER PLANT,YEAR,file,variable,value,MONTH,period,energy_type,prime_mover_type,mer_type,common_name,sensor_name
-57922,Dry Lake Solar,WT,WND,WND,,N,2012,EIA923_Schedules_2_3_4_5_M_12_2012_Final_Revision.xlsx,TOT MMBTU DEC,0,DEC,2012-12-01,Wind,"Wind Turbine, Onshore",Wind,total-fuel-consumed,"Wind - Wind Turbine, Onshore - Wind - Total Fuel Consumed"
-57922,Dry Lake Solar,WT,WND,WND,,N,2012,EIA923_Schedules_2_3_4_5_M_12_2012_Final_Revision.xlsx,ELEC MMBTU DEC,0,DEC,2012-12-01,Wind,"Wind Turbine, Onshore",Wind,quantity-consumed-electricity,"Wind - Wind Turbine, Onshore - Wind - Quantity Consumed For Electricity"
-57922,Dry Lake Solar,WT,WND,WND,,N,2012,EIA923_Schedules_2_3_4_5_M_12_2012_Final_Revision.xlsx,NETGEN DEC,0,DEC,2012-12-01,Wind,"Wind Turbine, Onshore",Wind,generation,"Wind - Wind Turbine, Onshore - Wind - Generation"

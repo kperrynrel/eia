@@ -1,4 +1,0 @@
-PLANT ID,PLANT NAME,REPORTED PRIME MOVER,REPORTED FUEL TYPE CODE,MER FUEL TYPE CODE,NUCLEAR UNIT ID,COMBINED HEAT AND POWER PLANT,YEAR,file,variable,value,MONTH,period,energy_type,prime_mover_type,mer_type,common_name,sensor_name
-50369,South Florida Cogen Associates,CA,NG,NG,,N,2003,f906920_2003.xls,ELEC MMBTU JAN,0,JAN,2003-01-01,Natural Gas,Combined Cycle Steam Part,Natural Gas,quantity-consumed-electricity,Natural Gas - Combined Cycle Steam Part - Natural Gas - Quantity Consumed For Electricity
-50369,South Florida Cogen Associates,CA,NG,NG,,N,2003,f906920_2003.xls,NETGEN JAN,0,JAN,2003-01-01,Natural Gas,Combined Cycle Steam Part,Natural Gas,generation,Natural Gas - Combined Cycle Steam Part - Natural Gas - Generation
-50369,South Florida Cogen Associates,CA,NG,NG,,N,2003,f906920_2003.xls,TOT MMBTU JAN,0,JAN,2003-01-01,Natural Gas,Combined Cycle Steam Part,Natural Gas,total-fuel-consumed,Natural Gas - Combined Cycle Steam Part - Natural Gas - Total Fuel Consumed

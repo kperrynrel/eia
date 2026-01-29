@@ -81,10 +81,10 @@ def process_master_plant_data(df,
                                  list(plant_df['variable'])]
             plant_df = plant_df[plant_df['YEAR']!='.']
             plant_df = plant_df[plant_df['MONTH']!='.']
-            plant_df['period'] = pd.to_datetime(
+            plant_df['measured_on'] = pd.to_datetime(
                 plant_df["MONTH"] + " 1, " + plant_df["YEAR"].astype(str),
                 errors='coerce')
-            plant_df = plant_df.sort_values(by='period')
+            plant_df = plant_df.sort_values(by='measured_on')
             # Remove NaN values or "." values
             plant_df = plant_df[~plant_df['REPORTED FUEL TYPE CODE'].isin(["   "])]
             plant_df = plant_df[plant_df['value']!='.']
@@ -146,10 +146,14 @@ def process_master_plant_data(df,
                                                plant_df['NUCLEAR UNIT ID'])
                 plant_df = plant_df[~plant_df['sensor_name'].isna()
                                     ].drop_duplicates()
+                
+                plant_df = plant_df[~plant_df['sensor_name'].isna()]
+                plant_df = plant_df[['measured_on', 'sensor_name', 'value']].drop_duplicates()
+                # Pivot it
+                plant_df = pd.pivot_table(plant_df, values='value', index=['measured_on'], columns=['sensor_name'])
                 # Write to a csv file
                 plant_df.to_csv("./923_monthly_production/" + str(plant_id) + 
-                                "_" + data_type +".csv",
-                                index=False)
+                                ".csv")
     return
 
 def get_soup(URL):
